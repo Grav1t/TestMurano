@@ -19,10 +19,9 @@ namespace TestMurano
                    
         
 
-        [Test]
+        [Test,Category("LogInOut")]
         public void LogInOutTestCaseTest1()//Positive test
         {
-            {
                 driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
                 driver.FindElement(By.Id("login-button")).Click();
                 driver.FindElement(By.Id("Email")).Click();
@@ -32,7 +31,7 @@ namespace TestMurano
                 driver.FindElement(By.Id("Password")).Clear();
                 driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
                 driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
-                Thread.Sleep(2000);
+                Thread.Sleep(3000);
                 try
                 {
                     Assert.AreEqual("Konsta", driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
@@ -59,9 +58,8 @@ namespace TestMurano
                 }
                 driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
                 driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
-            }
-        }
-        [Test]
+               }
+        [Test, Category("LogInOut")]
         public void LogInOutTestCaseTest2()//Wrong Password
         {
                 driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
@@ -86,7 +84,7 @@ namespace TestMurano
             
 
         }
-        [Test]
+        [Test, Category("LogInOut")]
         public void LogInOutTestCaseTest3()///Wrong Email
         {
             driver.Navigate().GoToUrl("https://dotnetfiddle.net/");

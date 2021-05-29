@@ -13,7 +13,7 @@ namespace TestMurano.BaseClass
     {
         public IWebDriver driver;
         
-        [OneTimeSetUp]
+        [SetUp]
         public void Open()
         {
             driver = new ChromeDriver("D:\\Program Files (x86)\\Google\\Chrome");
@@ -21,9 +21,11 @@ namespace TestMurano.BaseClass
             driver.Url = "https://dotnetfiddle.net/";
         }
 
-        [OneTimeTearDown]
+        [TearDown]
         public void Close()
         {
+            driver.Close();
+            
             driver.Quit();
         }
 
