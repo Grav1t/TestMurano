@@ -1,19 +1,30 @@
+using System;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using NUnit.Framework;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
+using TestMurano.BaseClass;
 
 
-namespace TestMurano
+
+namespace TestMurano2
+
 {
-    public class Tests
-    {
-        [SetUp]
-        public void Setup()
-        {
-        }
+    [TestFixture]
 
+    public class TestClass : BaseTest
+
+    {
         [Test]
         public void Test1()
         {
-            Assert.Pass();
+            driver.FindElement(By.Id("login-button")).Click();
+            IWebElement logInButton = driver.FindElement(By.Id("Email"));
+            logInButton.SendKeys("k.test01@mail.ru");
+
         }
     }
 }
