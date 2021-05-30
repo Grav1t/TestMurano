@@ -8,6 +8,9 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using TestMurano.BaseClass;
 using TestMurano.Utilities;
+using AventStack.ExtentReports;
+using AventStack.ExtentReports.Reporter;
+
 
 
 namespace TestMurano
@@ -15,13 +18,33 @@ namespace TestMurano
     [TestFixture]
     public class LogInParallelBrowsers
     {
+        ExtentReports extent = null;
+
+        [OneTimeSetUp]
+        public void ExtentStart()
+        {
+            extent = new ExtentReports();
+            var htmlReporter = new ExtentHtmlReporter(@" D: \Users\Дом\source\repos\TestMurano\TestMurano\ExtentReports\LogInParallelBrowsers.html");
+            extent.AttachReporter(htmlReporter);
+
+
+        }
+        [OneTimeTearDown]
+        public void ExtentClose()
+        {
+            extent.Flush();
+        }
+
         IWebDriver driver;
         private StringBuilder verificationErrors;
         private bool acceptNextAlert = true;
         [Test, Category("LogInOut"), Category("Chrome")]
         public void LogInOutTestCaseTest1()//Positive test
         {
+            ExtentTest test = extent.CreateTest("Test1").Info("Test Started");
+           
             var Driver = new BrowserUtilities().Init(driver, 1);
+            test.Log(Status.Info, "Chrome Browser lanches");
             Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("login-button")).Click();
             Driver.FindElement(By.Id("Email")).Click();
@@ -31,6 +54,7 @@ namespace TestMurano
             Driver.FindElement(By.Id("Password")).Clear();
             Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
             Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            test.Log(Status.Info, "User log in");
             Thread.Sleep(2000);
             try
             {
@@ -39,6 +63,7 @@ namespace TestMurano
             catch (AssertionException e)
             {
                 verificationErrors.Append(e.Message);
+                test.Log(Status.Fail, e.ToString());
             }
             try
             {
@@ -58,8 +83,8 @@ namespace TestMurano
             }
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
-            Driver.Close(); 
-            Driver.Quit();
+                        Driver.Quit();
+            test.Log(Status.Pass,"Test2 Passed");
         }
         [Test, Category("LogInOut"), Category("Chrome")]
         public void LogInOutTestCaseTest2()//Wrong Password
@@ -84,7 +109,7 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
-            Driver.Close();
+           
             Driver.Quit();
 
         }
@@ -111,7 +136,7 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
-            Driver.Close();
+           
             Driver.Quit();
         }
         [Test, Category("LogInOut"), Category("Firefox")]
@@ -154,7 +179,7 @@ namespace TestMurano
             }
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
-            Driver.Close();
+            
             Driver.Quit();
         }
         [Test, Category("LogInOut"), Category("Firefox")]
@@ -180,7 +205,7 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
-            Driver.Close();
+            
             Driver.Quit();
 
         }
@@ -207,7 +232,7 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
-            Driver.Close();
+            
             Driver.Quit();
         }
         [Test, Category("LogInOut"), Category("IExplorer")]
@@ -223,7 +248,7 @@ namespace TestMurano
             Driver.FindElement(By.Id("Password")).Clear();
             Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
             Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
             try
             {
                 Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
@@ -249,9 +274,8 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
-            Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
-            Driver.Close();
+            
             Driver.Quit();
         }
         [Test, Category("LogInOut"), Category("IExplorer")]
@@ -277,7 +301,7 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
-            Driver.Close();
+            
             Driver.Quit();
 
         }
@@ -304,7 +328,7 @@ namespace TestMurano
                 verificationErrors.Append(e.Message);
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
-            Driver.Close();
+            
             Driver.Quit();
         }
     }

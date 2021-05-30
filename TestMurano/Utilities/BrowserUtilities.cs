@@ -13,12 +13,13 @@ namespace TestMurano.Utilities
 {
     class BrowserUtilities
     {
+        public int select;
         public IWebDriver Init(IWebDriver driver, int selectBrowser)
         {
-            if (selectBrowser == 1) { driver = new ChromeDriver("D:\\Program Files (x86)\\Google\\Chrome"); }
-            if (selectBrowser == 2) { driver = new FirefoxDriver(); }
-            if (selectBrowser == 3) { driver = new InternetExplorerDriver(); } 
-            else { driver = new FirefoxDriver(); }
+            select = selectBrowser;
+            if (select == 1) { driver = new ChromeDriver("D:\\Program Files (x86)\\Google\\Chrome"); }
+            else if (select == 2) { driver = new FirefoxDriver(); }
+            else { driver = new InternetExplorerDriver(); }
             driver.Manage().Window.Maximize();
             driver.Url = "https://dotnetfiddle.net/";
             return driver;
