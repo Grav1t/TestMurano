@@ -155,5 +155,5 @@ namespace TestMurano
                     acceptNextAlert = true;
                 }
             }*/
-        }
+    }
 }

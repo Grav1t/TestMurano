@@ -18,10 +18,106 @@ namespace TestMurano
         IWebDriver driver;
         private StringBuilder verificationErrors;
         private bool acceptNextAlert = true;
-        [Test]
+        [Test, Category("LogInOut"), Category("Chrome")]
         public void LogInOutTestCaseTest1()//Positive test
         {
-            var Driver = new BrowserUtilities().Init(driver);
+            var Driver = new BrowserUtilities().Init(driver, 1);
+            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Driver.FindElement(By.Id("login-button")).Click();
+            Driver.FindElement(By.Id("Email")).Click();
+            Driver.FindElement(By.Id("Email")).Clear();
+            Driver.FindElement(By.Id("Email")).SendKeys("k.test01@mail.ru");
+            Driver.FindElement(By.Id("Password")).Click();
+            Driver.FindElement(By.Id("Password")).Clear();
+            Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
+            Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            Thread.Sleep(2000);
+            try
+            {
+                Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            try
+            {
+                Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            try
+            {
+                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
+            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
+            Driver.Close(); 
+            Driver.Quit();
+        }
+        [Test, Category("LogInOut"), Category("Chrome")]
+        public void LogInOutTestCaseTest2()//Wrong Password
+        {
+            var Driver = new BrowserUtilities().Init(driver, 1);
+            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Driver.FindElement(By.Id("login-button")).Click();
+            Driver.FindElement(By.Id("Email")).Click();
+            Driver.FindElement(By.Id("Email")).Clear();
+            Driver.FindElement(By.Id("Email")).SendKeys("k.test01@mail.ru");
+            Driver.FindElement(By.Id("Password")).Click();
+            Driver.FindElement(By.Id("Password")).Clear();
+            Driver.FindElement(By.Id("Password")).SendKeys("TestPass01");
+            Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            Thread.Sleep(2000);
+            try
+            {
+                Assert.AreEqual("Incorrect email or password.", Driver.FindElement(By.XPath("//span[@id='login-message']/div")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            Driver.FindElement(By.XPath("//button[@type='button']")).Click();
+            Driver.Close();
+            Driver.Quit();
+
+        }
+        [Test, Category("LogInOut"), Category("Chrome")]
+        public void LogInOutTestCaseTest3()///Wrong Email
+        {
+            var Driver = new BrowserUtilities().Init(driver, 1);
+            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Driver.FindElement(By.Id("login-button")).Click();
+            Driver.FindElement(By.Id("Email")).Click();
+            Driver.FindElement(By.Id("Email")).Clear();
+            Driver.FindElement(By.Id("Email")).SendKeys("k.test001@mail.ru");
+            Driver.FindElement(By.Id("Password")).Click();
+            Driver.FindElement(By.Id("Password")).Clear();
+            Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
+            Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            Thread.Sleep(2000);
+            try
+            {
+                Assert.AreEqual("Incorrect email or password.", Driver.FindElement(By.XPath("//span[@id='login-message']/div")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            Driver.FindElement(By.XPath("//button[@type='button']")).Click();
+            Driver.Close();
+            Driver.Quit();
+        }
+        [Test, Category("LogInOut"), Category("Firefox")]
+        public void LogInOutTestCaseTest4()//Positive test
+        {
+            var Driver = new BrowserUtilities().Init(driver, 2);
             Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("login-button")).Click();
             Driver.FindElement(By.Id("Email")).Click();
@@ -59,11 +155,12 @@ namespace TestMurano
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
             Driver.Close();
+            Driver.Quit();
         }
-        [Test]
-        public void LogInOutTestCaseTest2()//Wrong Password
+        [Test, Category("LogInOut"), Category("Firefox")]
+        public void LogInOutTestCaseTest5()//Wrong Password
         {
-            var Driver = new BrowserUtilities().Init(driver);
+            var Driver = new BrowserUtilities().Init(driver, 2);
             Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("login-button")).Click();
             Driver.FindElement(By.Id("Email")).Click();
@@ -84,12 +181,13 @@ namespace TestMurano
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
             Driver.Close();
+            Driver.Quit();
 
         }
-        [Test]
-        public void LogInOutTestCaseTest3()///Wrong Email
+        [Test, Category("LogInOut"), Category("Firefox")]
+        public void LogInOutTestCaseTest6()///Wrong Email
         {
-            var Driver = new BrowserUtilities().Init(driver);
+            var Driver = new BrowserUtilities().Init(driver, 2);
             Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("login-button")).Click();
             Driver.FindElement(By.Id("Email")).Click();
@@ -110,7 +208,104 @@ namespace TestMurano
             }
             Driver.FindElement(By.XPath("//button[@type='button']")).Click();
             Driver.Close();
+            Driver.Quit();
         }
-      
+        [Test, Category("LogInOut"), Category("IExplorer")]
+        public void LogInOutTestCaseTest7()//Positive test
+        {
+            var Driver = new BrowserUtilities().Init(driver, 3);
+            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Driver.FindElement(By.Id("login-button")).Click();
+            Driver.FindElement(By.Id("Email")).Click();
+            Driver.FindElement(By.Id("Email")).Clear();
+            Driver.FindElement(By.Id("Email")).SendKeys("k.test01@mail.ru");
+            Driver.FindElement(By.Id("Password")).Click();
+            Driver.FindElement(By.Id("Password")).Clear();
+            Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
+            Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            Thread.Sleep(2000);
+            try
+            {
+                Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            try
+            {
+                Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            try
+            {
+                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
+            Thread.Sleep(1000);
+            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/ul/li[4]/a")).Click();
+            Driver.Close();
+            Driver.Quit();
+        }
+        [Test, Category("LogInOut"), Category("IExplorer")]
+        public void LogInOutTestCaseTest8()//Wrong Password
+        {
+            var Driver = new BrowserUtilities().Init(driver, 3);
+            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Driver.FindElement(By.Id("login-button")).Click();
+            Driver.FindElement(By.Id("Email")).Click();
+            Driver.FindElement(By.Id("Email")).Clear();
+            Driver.FindElement(By.Id("Email")).SendKeys("k.test01@mail.ru");
+            Driver.FindElement(By.Id("Password")).Click();
+            Driver.FindElement(By.Id("Password")).Clear();
+            Driver.FindElement(By.Id("Password")).SendKeys("TestPass01");
+            Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            Thread.Sleep(2000);
+            try
+            {
+                Assert.AreEqual("Incorrect email or password.", Driver.FindElement(By.XPath("//span[@id='login-message']/div")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            Driver.FindElement(By.XPath("//button[@type='button']")).Click();
+            Driver.Close();
+            Driver.Quit();
+
+        }
+        [Test, Category("LogInOut"), Category("IExplorer")]
+        public void LogInOutTestCaseTest9()///Wrong Email
+        {
+            var Driver = new BrowserUtilities().Init(driver, 3);
+            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Driver.FindElement(By.Id("login-button")).Click();
+            Driver.FindElement(By.Id("Email")).Click();
+            Driver.FindElement(By.Id("Email")).Clear();
+            Driver.FindElement(By.Id("Email")).SendKeys("k.test001@mail.ru");
+            Driver.FindElement(By.Id("Password")).Click();
+            Driver.FindElement(By.Id("Password")).Clear();
+            Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
+            Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
+            Thread.Sleep(2000);
+            try
+            {
+                Assert.AreEqual("Incorrect email or password.", Driver.FindElement(By.XPath("//span[@id='login-message']/div")).Text);
+            }
+            catch (AssertionException e)
+            {
+                verificationErrors.Append(e.Message);
+            }
+            Driver.FindElement(By.XPath("//button[@type='button']")).Click();
+            Driver.Close();
+            Driver.Quit();
+        }
     }
 }

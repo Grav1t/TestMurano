@@ -20,7 +20,7 @@ using NUnit.Framework;
 [assembly: Guid("488d4ed2-18a5-4c2e-b43b-434c2f187c99")]
 
 //Define test attributes
-[assembly: Parallelizable(ParallelScope.Children)]
+//[assembly: Parallelizable(ParallelScope.Children)]
 
 //Number of browsers
-[assembly: LevelOfParallelism(1)]
+//[assembly: LevelOfParallelism(1)]

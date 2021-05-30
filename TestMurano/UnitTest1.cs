@@ -10,7 +10,7 @@ using TestMurano.BaseClass;
 
 
 
-namespace TestMurano2
+namespace CheckFinish
 
 {
     [TestFixture]
