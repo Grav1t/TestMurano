@@ -6,6 +6,9 @@ using TestMurano.Utilities;
 using AventStack.ExtentReports;
 using AventStack.ExtentReports.Reporter;
 using OpenQA.Selenium.Support.UI;
+using System;
+using OpenQA.Selenium.IE;
+using OpenQA.Selenium.Remote;
 
 namespace TestMuranoDefTests
 {
@@ -14,12 +17,17 @@ namespace TestMuranoDefTests
     {
         ExtentReports extent = null;
         IWebDriver driver;
+        IWebElement click = null;
         private StringBuilder verificationErrors;
         private bool acceptNextAlert = true;
 
-        public void LogIn(IWebDriver Driver)
+        public void LogIn(IWebDriver Driver)  // log In function
         {
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            
+            if (((RemoteWebDriver)Driver).Capabilities.BrowserName == "internet explorer")
+                {
+                Thread.Sleep(2000);
+            } // IE need additional time lo load
             Driver.FindElement(By.Id("login-button")).Click();
             Driver.FindElement(By.Id("Email")).Click();
             Driver.FindElement(By.Id("Email")).Clear();
@@ -29,17 +37,34 @@ namespace TestMuranoDefTests
             Driver.FindElement(By.Id("Password")).SendKeys("TestPass001");
             Driver.FindElement(By.XPath("//form[@id='form0']/div[3]/div[2]/button")).Click();
         }
-        public void LogOut(IWebDriver Driver)
+        public void LogOut(IWebDriver Driver) // Log Out Function depends of browser get different ways to check web elements
         {
-            Driver.FindElement(By.Id("account-display-name")).Click();
-            Driver.FindElement(By.LinkText("Log out")).Click();
+            if (((RemoteWebDriver)Driver).Capabilities.BrowserName == "chrome")
+            {
+                Thread.Sleep(2000);
+                Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
+                Driver.FindElement(By.LinkText("Log out")).Click();
+            }
+            if (((RemoteWebDriver)Driver).Capabilities.BrowserName == "firefox")
+            {
+                Thread.Sleep(2000);
+                Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
+                Driver.FindElement(By.LinkText("Log out")).Click();
+            }
+            if (((RemoteWebDriver)Driver).Capabilities.BrowserName == "internet explorer")
+             {
+                 Thread.Sleep(2000);
+                Driver.FindElement(By.LinkText("Konsta")).Click();
+                Driver.FindElement(By.XPath("//a[contains(@href, '/Account/Logout')]")).Click();
+             }
+            
         }
 
         [OneTimeSetUp]
         public void ExtentStart()
         {
-            extent = new ExtentReports();
-            var htmlReporter = new ExtentHtmlReporter(@" D: \Users\Дом\source\repos\TestMurano\TestMurano\ExtentReports\LogInParallelBrowsers.html");
+            extent = new ExtentReports(); // Collect Test Reports
+            var htmlReporter = new ExtentHtmlReporter(@" D: \Users\Дом\source\repos\TestMurano\TestMurano\ExtentReports\LogInParallelBrowsers.html"); // Path to Reports File
             extent.AttachReporter(htmlReporter);
         }
 
@@ -50,8 +75,8 @@ namespace TestMuranoDefTests
             extent.Flush();
         }
 
-
-        [Test, Category("DefaltUI"), Category("ChromeUI")]
+        // Bunch of default test for testing main interface of site.Split by different browsers
+               [Test, Category("DefaltUI"), Category("ChromeUI")]
         public void LogInOutTestCaseTest1()//Positive test
         {
             ExtentTest test = extent.CreateTest("1TestUI").Info("Test Started");
@@ -60,33 +85,33 @@ namespace TestMuranoDefTests
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 1 Passed");
@@ -103,25 +128,25 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.CssSelector("a.user-name.dropdown-toggle > span.caret")).Click();
             Driver.FindElement(By.LinkText("My Fiddles")).Click();
-            try
-            {
-                Assert.AreEqual("My Fiddles", Driver.FindElement(By.LinkText("My Fiddles")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            Driver.FindElement(By.LinkText("Favorites")).Click();
-            try
-            {
-                Assert.AreEqual("Favorites", Driver.FindElement(By.LinkText("Favorites")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("My Fiddles", Driver.FindElement(By.LinkText("My Fiddles")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+             Driver.FindElement(By.LinkText("Favorites")).Click();
+                try
+                {
+                    Assert.AreEqual("Favorites", Driver.FindElement(By.LinkText("Favorites")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 2 Passed");
@@ -138,25 +163,25 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
             Driver.FindElement(By.LinkText("Account")).Click();
-            try
-            {
-                Assert.AreEqual("Account Settings", Driver.FindElement(By.XPath("//h3")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            Driver.FindElement(By.Id("account-settings-form")).Click();
-            try
-            {
-                Assert.AreEqual("Account Settings | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Account Settings", Driver.FindElement(By.XPath("//h3")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+        Driver.FindElement(By.Id("account-settings-form")).Click();
+                try
+                {
+                    Assert.AreEqual("Account Settings | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 3 Passed");
@@ -174,15 +199,15 @@ namespace TestMuranoDefTests
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[3]/div[2]/div/button/span")).Click();
             Driver.FindElement(By.LinkText("Public")).Click();
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Public", Driver.FindElement(By.XPath("/html/body/div[1]/div[3]/div/form/div[2]/div[3]/div[2]/div/button/span[1]")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Public", Driver.FindElement(By.XPath("/html/body/div[1]/div[3]/div/form/div[2]/div[3]/div[2]/div/button/span[1]")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 4 Passed");
         }
@@ -198,15 +223,15 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[3]/div[2]/div/button/span")).Click();
             Driver.FindElement(By.LinkText("Public")).Click();
-            try
-            {
-                Assert.AreEqual("Public ", Driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Public ", Driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 5 Passed");
@@ -217,27 +242,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("6TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
             Thread.Sleep(5000);
-            try
-            {
-                Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 6 Passed");
         }
@@ -248,27 +272,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("7TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
             Thread.Sleep(5000);
-            try
-            {
-                Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 7 Passed");
         }
@@ -283,24 +306,24 @@ namespace TestMuranoDefTests
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.LinkText("Getting Started")).Click();
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Overview", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Overview", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             LogOut(Driver);
             Driver.Quit();
@@ -313,19 +336,28 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("9TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("togetherjs")).Click();
             Thread.Sleep(1000);
-            Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
-            try
-            {
-                Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    click = Driver.FindElement(By.CssSelector("#togetherjs-walkthrough"));
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                if (click != null)
+                {
+                    Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
+                }
+                try
+                {
+                    Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 9 Passed");
         }
@@ -338,19 +370,30 @@ namespace TestMuranoDefTests
             var Driver = new BrowserUtilities().Init(driver, 1);
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(1000);
             Driver.FindElement(By.Id("togetherjs")).Click();
             Thread.Sleep(1000);
-            Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
-            try
-            {
-                Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    click = Driver.FindElement(By.CssSelector("#togetherjs-walkthrough"));
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                if (click != null)
+                {
+                    Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
+                
+                }
+                try
+                {
+                    Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 10 Passed");
@@ -362,26 +405,25 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("11TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("Share")).Click();
-            try
-            {
-                Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[4]/div/div/div[2]/div[6]")).Click();
             Driver.Quit();
             test.Log(Status.Pass, "Test 11 Passed");
@@ -394,26 +436,25 @@ namespace TestMuranoDefTests
             var Driver = new BrowserUtilities().Init(driver, 1);
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("Share")).Click();
-            try
-            {
-                Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[4]/div/div/div[2]/div[6]")).Click();
             LogOut(Driver);
             Driver.Quit();
@@ -427,38 +468,39 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("13TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
             Driver.FindElement(By.Id("Language")).Click();
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
-            try
-            {
-                Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("F#");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
             Driver.Quit();
             test.Log(Status.Pass, "Test 13 Passed");
         }
@@ -473,38 +515,40 @@ namespace TestMuranoDefTests
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
-            try
-            {
-                Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("F#");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+            Thread.Sleep(1000);
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 14 Passed");
@@ -517,56 +561,57 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("15TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("Compiler")).Click();
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText("Roslyn 3.8");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 5");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
             Driver.Quit();
             test.Log(Status.Pass, "Test 15 Passed");
         }
@@ -579,56 +624,57 @@ namespace TestMuranoDefTests
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("Compiler")).Click();
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText("Roslyn 3.8");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 5");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 16 Passed");
@@ -640,61 +686,63 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("17TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Script");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("MVC");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Nancy");
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test17 Passed");
         }
@@ -708,61 +756,63 @@ namespace TestMuranoDefTests
             LogIn(Driver); 
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
             try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Script");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("MVC");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Nancy");
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 18 Passed");
@@ -774,22 +824,21 @@ namespace TestMuranoDefTests
         public void AboutTestUA()
         { ExtentTest test = extent.CreateTest("19TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
             Driver.FindElement(By.Id("output")).Click();
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test19 Passed");
         }
@@ -810,15 +859,15 @@ namespace TestMuranoDefTests
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 20 Passed");
@@ -831,37 +880,36 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("Test21UI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Roadmap")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[3]/div/div/div[1]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[3]/div/div/div[1]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 21 Passed");
         }
@@ -878,33 +926,33 @@ namespace TestMuranoDefTests
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Roadmap")).Click();
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[2]/div/div/div[1]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[2]/div/div/div[1]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 22 Passed");
@@ -917,27 +965,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("23TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Terms")).Click();
-            try
-            {
-                Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 23 Passed");
         }
@@ -953,24 +1000,24 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Terms")).Click();
-            try
-            {
-                Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 24 Passed");
@@ -981,27 +1028,26 @@ namespace TestMuranoDefTests
         public void PrivacyTestUA()
         { ExtentTest test = extent.CreateTest("25TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Privacy Policy")).Click();
-            try
-            {
-                Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 25 Passed");
         }
@@ -1017,24 +1063,24 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Privacy Policy")).Click();
-            try
-            {
-                Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 26 Passed");
@@ -1046,7 +1092,6 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("27TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 1);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button/span")).Click();
             Driver.FindElement(By.LinkText("Contact Us")).Click();
                 try
@@ -1082,24 +1127,24 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button/span")).Click();
             Driver.FindElement(By.LinkText("Contact Us")).Click();
-            try
-            {
-                Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                 verificationErrors.Append(e.Message); 
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                     verificationErrors.Append(e.Message); 
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 28 Passed");
@@ -1122,33 +1167,33 @@ namespace TestMuranoDefTests
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 29 Passed");
@@ -1165,25 +1210,25 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.CssSelector("a.user-name.dropdown-toggle > span.caret")).Click();
             Driver.FindElement(By.LinkText("My Fiddles")).Click();
-            try
-            {
-                Assert.AreEqual("My Fiddles", Driver.FindElement(By.LinkText("My Fiddles")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            Driver.FindElement(By.LinkText("Favorites")).Click();
-            try
-            {
-                Assert.AreEqual("Favorites", Driver.FindElement(By.LinkText("Favorites")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("My Fiddles", Driver.FindElement(By.LinkText("My Fiddles")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                Driver.FindElement(By.LinkText("Favorites")).Click();
+                try
+                {
+                    Assert.AreEqual("Favorites", Driver.FindElement(By.LinkText("Favorites")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 30 Passed");
@@ -1200,25 +1245,25 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
             Driver.FindElement(By.LinkText("Account")).Click();
-            try
-            {
-                Assert.AreEqual("Account Settings", Driver.FindElement(By.XPath("//h3")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            Driver.FindElement(By.Id("account-settings-form")).Click();
-            try
-            {
-                Assert.AreEqual("Account Settings | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Account Settings", Driver.FindElement(By.XPath("//h3")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                Driver.FindElement(By.Id("account-settings-form")).Click();
+                try
+                {
+                    Assert.AreEqual("Account Settings | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 31 Passed");
@@ -1236,15 +1281,15 @@ namespace TestMuranoDefTests
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[3]/div[2]/div/button/span")).Click();
             Driver.FindElement(By.LinkText("Public")).Click();
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Public", Driver.FindElement(By.XPath("/html/body/div[1]/div[3]/div/form/div[2]/div[3]/div[2]/div/button/span[1]")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Public", Driver.FindElement(By.XPath("/html/body/div[1]/div[3]/div/form/div[2]/div[3]/div[2]/div/button/span[1]")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 32 Passed");
         }
@@ -1260,15 +1305,15 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[3]/div[2]/div/button/span")).Click();
             Driver.FindElement(By.LinkText("Public")).Click();
-            try
-            {
-                Assert.AreEqual("Public ", Driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Public ", Driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 33 Passed");
@@ -1279,27 +1324,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("34TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
             Thread.Sleep(5000);
-            try
-            {
-                Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 34 Passed");
         }
@@ -1310,27 +1354,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("35TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
             Thread.Sleep(5000);
-            try
-            {
-                Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 35 Passed");
         }
@@ -1345,24 +1388,24 @@ namespace TestMuranoDefTests
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.LinkText("Getting Started")).Click();
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Overview", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Overview", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             LogOut(Driver);
             Driver.Quit();
@@ -1375,19 +1418,29 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("37TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("togetherjs")).Click();
             Thread.Sleep(1000);
-            Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
-            try
-            {
-                Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    click = Driver.FindElement(By.CssSelector("#togetherjs-walkthrough"));
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                if (click != null)
+                {
+                    Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
+
+                }
+                try
+                {
+                    Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 37 Passed");
         }
@@ -1400,19 +1453,29 @@ namespace TestMuranoDefTests
             var Driver = new BrowserUtilities().Init(driver, 2);
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(1000);
             Driver.FindElement(By.Id("togetherjs")).Click();
             Thread.Sleep(1000);
-            Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
-            try
-            {
-                Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    click = Driver.FindElement(By.CssSelector("#togetherjs-walkthrough"));
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                if (click != null)
+                {
+                    Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
+                }
+                try
+                {
+                    Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 38 Passed");
@@ -1424,26 +1487,25 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("39TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("Share")).Click();
-            try
-            {
-                Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[4]/div/div/div[2]/div[6]")).Click();
             Driver.Quit();
             test.Log(Status.Pass, "Test 39 Passed");
@@ -1456,23 +1518,22 @@ namespace TestMuranoDefTests
             var Driver = new BrowserUtilities().Init(driver, 2);
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("Share")).Click();
-            try
-            {
-                Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
+                try
+                {
+                    Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
                 verificationErrors.Append(e.Message);
                 test.Log(Status.Fail, e.ToString());
             }
@@ -1489,38 +1550,39 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("41TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
             Driver.FindElement(By.Id("Language")).Click();
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
-            try
-            {
-                Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
+                try
+                {
+                    Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("F#");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
             Driver.Quit();
             test.Log(Status.Pass, "Test 41 Passed");
         }
@@ -1535,38 +1597,39 @@ namespace TestMuranoDefTests
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
-            try
-            {
-                Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("F#");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 42 Passed");
@@ -1579,56 +1642,57 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("43TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("Compiler")).Click();
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText("Roslyn 3.8");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 5");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
             Driver.Quit();
             test.Log(Status.Pass, "Test 43 Passed");
         }
@@ -1642,57 +1706,60 @@ namespace TestMuranoDefTests
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("Compiler")).Click();
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText("Roslyn 3.8");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 5");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
             LogOut(Driver);
+
+            Thread.Sleep(1000); 
             Driver.Quit();
             test.Log(Status.Pass, "Test 44 Passed");
         }
@@ -1703,61 +1770,63 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("45TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Script");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("MVC");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Nancy");
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 45 Passed");
         }
@@ -1771,61 +1840,63 @@ namespace TestMuranoDefTests
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Script");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("MVC");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Nancy");
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 46 Passed");
@@ -1838,22 +1909,22 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("47TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
+            Thread.Sleep(1000);
             Driver.FindElement(By.Id("output")).Click();
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test47 Passed");
         }
@@ -1868,21 +1939,20 @@ namespace TestMuranoDefTests
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
-            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
-            Driver.FindElement(By.Id("about-btn")).Click();
             Driver.FindElement(By.Id("output")).Click();
+            Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 48 Passed");
@@ -1895,37 +1965,36 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("49TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Roadmap")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[3]/div/div/div[1]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[3]/div/div/div[1]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 49 Passed");
         }
@@ -1942,33 +2011,33 @@ namespace TestMuranoDefTests
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Roadmap")).Click();
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[2]/div/div/div[1]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[2]/div/div/div[1]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 50 Passed");
@@ -1981,27 +2050,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("51TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Terms")).Click();
-            try
-            {
-                Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 51 Passed");
         }
@@ -2017,24 +2085,24 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Terms")).Click();
-            try
-            {
-                Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 52 Passed");
@@ -2046,27 +2114,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("53TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Privacy Policy")).Click();
-            try
-            {
-                Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 53 Passed");
         }
@@ -2082,24 +2149,24 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Privacy Policy")).Click();
-            try
-            {
-                Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 54 Passed");
@@ -2111,27 +2178,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("55TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 2);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button/span")).Click();
             Driver.FindElement(By.LinkText("Contact Us")).Click();
-            try
-            {
-                Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 55 Passed");
         }
@@ -2147,24 +2213,24 @@ namespace TestMuranoDefTests
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button/span")).Click();
             Driver.FindElement(By.LinkText("Contact Us")).Click();
-            try
-            {
-                Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 56 Passed");
@@ -2183,34 +2249,34 @@ namespace TestMuranoDefTests
             test.Log(Status.Info, "Chrome Browser lanches");
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Thread.Sleep(5000);
+                try
+                {
+                    Assert.AreEqual("Konsta", Driver.FindElement(By.XPath("//span[@id='account-display-name']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("k.test01@mail.ru", Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/span")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 57 Passed");
@@ -2224,28 +2290,28 @@ namespace TestMuranoDefTests
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             Driver.FindElement(By.CssSelector("a.user-name.dropdown-toggle > span.caret")).Click();
             Driver.FindElement(By.LinkText("My Fiddles")).Click();
-            try
-            {
-                Assert.AreEqual("My Fiddles", Driver.FindElement(By.LinkText("My Fiddles")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("My Fiddles", Driver.FindElement(By.LinkText("My Fiddles")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.LinkText("Favorites")).Click();
-            try
-            {
-                Assert.AreEqual("Favorites", Driver.FindElement(By.LinkText("Favorites")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Favorites", Driver.FindElement(By.LinkText("Favorites")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 58 Passed");
@@ -2258,29 +2324,30 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("59TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div/div/a/span[2]")).Click();
             Driver.FindElement(By.LinkText("Account")).Click();
-            try
-            {
-                Assert.AreEqual("Account Settings", Driver.FindElement(By.XPath("//h3")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Account Settings", Driver.FindElement(By.XPath("//h3")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("account-settings-form")).Click();
-            try
-            {
-                Assert.AreEqual("Account Settings | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Account Settings | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 59 Passed");
@@ -2292,21 +2359,20 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("60TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
+            Driver.FindElement(By.CssSelector("#new-button")).Click();
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[3]/div[2]/div/button/span")).Click();
-            Driver.FindElement(By.LinkText("Public")).Click();
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Public", Driver.FindElement(By.XPath("/html/body/div[1]/div[3]/div/form/div[2]/div[3]/div[2]/div/button/span[1]")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Public", Driver.FindElement(By.XPath("/html/body/div[1]/div[3]/div/form/div[2]/div[3]/div[2]/div/button/span[1]")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 60 Passed");
         }
@@ -2318,19 +2384,20 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("61TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[3]/div[2]/div/button/span")).Click();
             Driver.FindElement(By.LinkText("Public")).Click();
-            try
-            {
-                Assert.AreEqual("Public ", Driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Public ", Driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 61 Passed");
@@ -2341,27 +2408,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("62TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
-            Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
             Thread.Sleep(5000);
-            try
-            {
-                Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
+                try
+                {
+                    Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 62 Passed");
         }
@@ -2372,27 +2438,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("63TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
-            Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
             Thread.Sleep(5000);
-            try
-            {
-                Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Driver.FindElement(By.XPath("(//a[@type='button'])[2]")).Click();
+                try
+                {
+                    Assert.AreEqual("All Fiddles | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("All Fiddles", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 63 Passed");
         }
@@ -2404,29 +2469,30 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("64TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
             Driver.FindElement(By.LinkText("Getting Started")).Click();
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Overview", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            Thread.Sleep(1000);
-            LogOut(Driver);
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Overview", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            Driver.FindElement(By.LinkText("Konsta")).Click();
+            Driver.FindElement(By.LinkText("Log out")).Click();
             Driver.Quit();
             test.Log(Status.Pass, "Test 64 Passed");
         }
@@ -2437,19 +2503,30 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("65TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            
+            Thread.Sleep(5000);
             Driver.FindElement(By.Id("togetherjs")).Click();
-            Thread.Sleep(1000);
-            Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
-            try
-            {
-                Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    click = Driver.FindElement(By.CssSelector("#togetherjs-walkthrough"));
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                if (click != null)
+                {
+                    Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
+
+                }
+                try
+                {
+                    Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 65 Passed");
         }
@@ -2461,20 +2538,31 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("66TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("togetherjs")).Click();
-            Thread.Sleep(1000);
-            Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
-            try
-            {
-                Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Thread.Sleep(2000);
+                try
+                {
+                    click = Driver.FindElement(By.CssSelector("#togetherjs-walkthrough"));
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                if (click != null)
+                {
+                    Driver.FindElement(By.CssSelector("#togetherjs-walkthrough .togetherjs-close")).Click();
+
+                }
+                try
+                {
+                    Assert.AreEqual("Invite a friend", Driver.FindElement(By.XPath("//div[@id='togetherjs-share']/header")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 66 Passed");
@@ -2486,27 +2574,26 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("67TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(5000);
             Driver.FindElement(By.Id("Share")).Click();
-            try
-            {
-                Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[4]/div/div/div[2]/div[6]")).Click();
+                try
+                {
+                    Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 67 Passed");
         }
@@ -2517,28 +2604,29 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("68TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
             Driver.FindElement(By.Id("Share")).Click();
-            try
-            {
-                Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            Driver.FindElement(By.XPath("//form[@id='CodeForm']/div[2]/div[4]/div/div/div[2]/div[6]")).Click();
+                try
+                {
+                    Assert.AreEqual("Share Link", Driver.FindElement(By.XPath("//div[@id='share-dialog']/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Embed on Your Page", Driver.FindElement(By.XPath("//div[@id='share-dialog']/div[2]/span/b")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            Thread.Sleep(1000);
+            
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 68 Passed");
@@ -2550,39 +2638,42 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("69TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
+            
+            Thread.Sleep(5000);
             Driver.FindElement(By.Id("Language")).Click();
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
-            try
-            {
-                Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("F#");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
             Driver.Quit();
             test.Log(Status.Pass, "Test 69 Passed");
         }
@@ -2594,41 +2685,43 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("70TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
-            Driver.FindElement(By.Id("Language")).Click();
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("VB.NET");
-            try
-            {
-                Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("VbNet", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("Language")).Click();
             new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("F#");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("FSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+            Thread.Sleep(1000);
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 70 Passed");
@@ -2640,57 +2733,58 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("71TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Thread.Sleep(5000);
+               try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("Compiler")).Click();
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText("Roslyn 3.8");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 5");
-            Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Thread.Sleep(2000);
+                try
+                {
+                    Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
             Driver.Quit();
             test.Log(Status.Pass, "Test 71 Passed");
         }
@@ -2701,59 +2795,64 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("72TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            LogIn(Driver);
+            LogIn(Driver); 
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
+                try
+                {
+                    Assert.AreEqual("Net45", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("Compiler")).Click();
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText("Roslyn 3.8");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Roslyn", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 5");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("NetCore22", Driver.FindElement(By.Id("Compiler")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("Compiler"))).SelectByText(".NET 4.7.2");
+            Thread.Sleep(1000);
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 72 Passed");
@@ -2765,61 +2864,64 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("73TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            Thread.Sleep(5000);
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Script");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("MVC");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Nancy");
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 73 Passed");
         }
@@ -2831,63 +2933,65 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("74TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+            new SelectElement(Driver.FindElement(By.Id("Language"))).SelectByText("C#");
+                try
+                {
+                    Assert.AreEqual("CSharp", Driver.FindElement(By.Id("Language")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+            new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Console");
+                try
+                {
+                    Assert.AreEqual("Console", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Script");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Script", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Thread.Sleep(1000);
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("MVC");
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Mvc", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.FindElement(By.Id("ProjectType")).Click();
             new SelectElement(Driver.FindElement(By.Id("ProjectType"))).SelectByText("Nancy");
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Nancy", Driver.FindElement(By.Id("ProjectType")).GetAttribute("value"));
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 74 Passed");
@@ -2900,22 +3004,20 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("75TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(5000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.Id("about-btn")).Click();
-            Driver.FindElement(By.Id("output")).Click();
-            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
-            Driver.FindElement(By.Id("about-btn")).Click();
-            Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+
+            Thread.Sleep(1000);
+                try
+                {
+                    Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test75 Passed");
         }
@@ -2928,27 +3030,24 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("76TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
+            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
+            Driver.FindElement(By.Id("about-btn")).Click();
             Thread.Sleep(1000);
-            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
-            Driver.FindElement(By.Id("about-btn")).Click();
             Driver.FindElement(By.Id("output")).Click();
-            Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
-            Driver.FindElement(By.Id("about-btn")).Click();
-            Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("ABOUT US\r\n========\r\n\r\nWe are a group of .NET developers who are sick and tired of starting Visual Studio, creating a new project and running it, just to test simple code or try out samples from other developers.  \r\n\r\nThis tool was inspired by http://jsfiddle.net, which is just awesome.\r\n\r\nIf you are interested in working on .NET Fiddle please send your resume and links to a couple of your best fiddles to dotnetfiddle at entechsolutions dot com.  The most impressive fiddle will get the job.\r\n\r\nENTech Solutions\r\nhttp://www.entechsolutions.com", Driver.FindElement(By.XPath("//*[@id='output']")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 76 Passed");
-
         }
 
 
@@ -2957,37 +3056,37 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("77TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(5000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Roadmap")).Click();
             Thread.Sleep(2000);
-            try
-            {
-                Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[3]/div/div/div[1]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[3]/div/div/div[1]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 77 Passed");
         }
@@ -2998,39 +3097,40 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("78TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            LogIn(Driver);
-            test.Log(Status.Info, "User log in");
             Thread.Sleep(1000);
+            LogIn(Driver);
+            Thread.Sleep(1000);
+            test.Log(Status.Info, "User log in");
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Roadmap")).Click();
             Thread.Sleep(1000);
-            try
-            {
-                Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[2]/div/div/div[1]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("What's coming?", Driver.FindElement(By.XPath("/html/body/div/div[2]/div/div/div[1]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual(".NET Fiddle Evolution", Driver.FindElement(By.XPath("//div[2]/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 78 Passed");
@@ -3043,27 +3143,27 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("79TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(5000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Terms")).Click();
-            try
-            {
-                Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 79 Passed");
         }
@@ -3075,28 +3175,28 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("80TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Terms")).Click();
-            try
-            {
-                Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Terms & Conditions", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Terms | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 80 Passed");
@@ -3108,27 +3208,27 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("81TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(5000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Privacy Policy")).Click();
-            try
-            {
-                Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 81 Passed");
         }
@@ -3140,28 +3240,28 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("82TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button")).Click();
             Driver.FindElement(By.LinkText("Privacy Policy")).Click();
-            try
-            {
-                Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy", Driver.FindElement(By.XPath("//h2")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Privacy Policy | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 82 Passed");
@@ -3173,27 +3273,27 @@ namespace TestMuranoDefTests
         {
             ExtentTest test = extent.CreateTest("83TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+            Thread.Sleep(5000);
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button/span")).Click();
             Driver.FindElement(By.LinkText("Contact Us")).Click();
-            try
-            {
-                Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             Driver.Quit();
             test.Log(Status.Pass, "Test 83 Passed");
         }
@@ -3205,32 +3305,32 @@ namespace TestMuranoDefTests
             ExtentTest test = extent.CreateTest("84TestUI").Info("Test Started");
             var Driver = new BrowserUtilities().Init(driver, 3);
             LogIn(Driver);
+            Thread.Sleep(5000);
             test.Log(Status.Info, "User log in");
-            Thread.Sleep(1000);
+            
             Driver.FindElement(By.XPath("//div[@id='top-navbar']/div[3]/div[2]/button/span")).Click();
             Driver.FindElement(By.LinkText("Contact Us")).Click();
-            try
-            {
-                Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
-            try
-            {
-                Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
-            }
-            catch (AssertionException e)
-            {
-                verificationErrors.Append(e.Message);
-                test.Log(Status.Fail, e.ToString());
-            }
+                try
+                {
+                    Assert.AreEqual("Contact us", Driver.FindElement(By.XPath("//div[@id='contact-page']/h1")).Text);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
+                try
+                {
+                    Assert.AreEqual("Contact us | C# Online Compiler | .NET Fiddle", Driver.Title);
+                }
+                catch (AssertionException e)
+                {
+                    verificationErrors.Append(e.Message);
+                    test.Log(Status.Fail, e.ToString());
+                }
             LogOut(Driver);
             Driver.Quit();
             test.Log(Status.Pass, "Test 84 Passed");
         }
     }
-}
 }

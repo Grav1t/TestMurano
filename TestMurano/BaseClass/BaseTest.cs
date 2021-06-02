@@ -7,6 +7,8 @@ using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
+//Basic test for testing the environment
+
 namespace TestMurano.BaseClass
 {
     public class BaseTest

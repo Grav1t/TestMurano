@@ -11,7 +11,7 @@ using TestMurano.Utilities;
 using AventStack.ExtentReports;
 using AventStack.ExtentReports.Reporter;
 
-
+//Checking parallel testing for several of the browsers, but starting even with 2 simultaneously running threads, errors start to fly out frequently
 
 namespace TestMurano
 {
@@ -239,7 +239,7 @@ namespace TestMurano
         public void LogInOutTestCaseTest7()//Positive test
         {
             var Driver = new BrowserUtilities().Init(driver, 3);
-            Driver.Navigate().GoToUrl("https://dotnetfiddle.net/");
+           
             Driver.FindElement(By.Id("login-button")).Click();
             Driver.FindElement(By.Id("Email")).Click();
             Driver.FindElement(By.Id("Email")).Clear();

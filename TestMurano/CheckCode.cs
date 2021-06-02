@@ -10,6 +10,9 @@ using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Interactions;
 using NUnit.Framework;
+
+//Module for checking code execution on a web resource
+
 [TestFixture]
 public class JStestTest
 {
@@ -61,7 +64,7 @@ public class JStestTest
             Actions builder = new Actions(driver);
             builder.DoubleClick(element).Perform();
         }
-        Assert.That(driver.FindElement(By.CssSelector(".cm-string")).Text, Is.EqualTo(@"""Hello World!"""));
+        Assert.That(driver.FindElement(By.CssSelector(".cm-string")).Text, Is.EqualTo(@"""Hello World"""));
         var TextMSG = driver.FindElement(By.CssSelector(".cm-string")).Text;
         driver.FindElement(By.CssSelector(".cm-string")).Click();
         driver.FindElement(By.CssSelector(".CodeMirror textarea")).SendKeys("Console.WriteLine(\"Hello Test!\");");

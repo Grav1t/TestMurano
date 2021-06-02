@@ -9,6 +9,8 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.IE;
 
+//An additional script for configuring the browser and further automating the process.
+
 namespace TestMurano.Utilities
 {
     class BrowserUtilities
